@@ -1,5 +1,26 @@
 import os
 from subprocess import run,PIPE
+from google.genai import types
+
+schema_run_python_file = types.FunctionDeclaration(
+    name="run_python_file",
+    description="Executes a Python script located in the working directory with optional arguments. Output and errors are returned as strings.",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The relative path of the Python file to execute, from the working directory.",
+            ),
+            "args": types.Schema(
+                type=types.Type.ARRAY,
+                items=types.Schema(type=types.Type.STRING),
+                description="Optional arguements to pass to the Python script."
+            )
+        },
+    ),
+)
+
 
 def run_python_file(working_directory, file_path, args=[]):
     full_path = os.path.join(working_directory, file_path)
@@ -26,8 +47,8 @@ def run_python_file(working_directory, file_path, args=[]):
             timeout=30
         )
 
-        stdout_text = completed_process.stdout.decode("utf-8")
-        stderr_text = completed_process.stderr.decode("utf-8")
+        stdout_text = completed_process.stdout.decode("utf-8").rstrip()
+        stderr_text = completed_process.stderr.decode("utf-8").rstrip()
 
         output_lines = [f"STDOUT: {stdout_text}", f"STDERR: {stderr_text}"]
         
